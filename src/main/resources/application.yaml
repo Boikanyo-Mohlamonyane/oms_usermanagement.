@@ -15,10 +15,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
 server:
-  port : 8082
+  port: 8082
 
-
-  jwt:
-    secret: fnb-b4-bootcamp-shared-jwt-signing-secret-change-me-32bytes-min
-    expiration: 3600000
+jwt:
+  secret: fnb-b4-bootcamp-shared-jwt-signing-secret-change-me-32bytes-min
+  expiration-ms: 3600000

@@ -1,10 +1,7 @@
-package model;
+package com.fnb.usermanagement.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,19 +15,18 @@ import java.util.UUID;
 public class Credentials {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private UUID credential_id;
+
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id") // foreign key column
     private User user;
+
     private String password_hash;
     private LocalDateTime created_at;
 
-
     @PrePersist
-    public void prePersist(){
+    public void prePersist() {
         created_at = LocalDateTime.now();
     }
-
-
-
 }

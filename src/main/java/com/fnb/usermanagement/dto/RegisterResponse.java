@@ -1,4 +1,4 @@
-package dto;
+package com.fnb.usermanagement.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

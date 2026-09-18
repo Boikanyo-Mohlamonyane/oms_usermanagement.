@@ -1,6 +1,6 @@
-package repository;
+package com.fnb.usermanagement.repository;
 
-import model.Credentials;
+import com.fnb.usermanagement.model.Credentials;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

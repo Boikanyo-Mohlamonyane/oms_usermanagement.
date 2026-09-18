@@ -1,6 +1,6 @@
-package dto;
+package com.fnb.usermanagement.dto;
 
-import enums.Role;
+import com.fnb.usermanagement.enums.Role;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Data;
