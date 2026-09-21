@@ -16,7 +16,8 @@ public class User {
 
     @Id
     @GeneratedValue
-    private UUID customer_id;
+    @Column(name = "customer_id")
+    private UUID customerId;
 
     private String first_name;
     private String surname;

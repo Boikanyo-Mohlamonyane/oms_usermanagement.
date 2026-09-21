@@ -2,60 +2,38 @@ package com.fnb.usermanagement.security.securityImpl;
 
 import com.fnb.usermanagement.model.User;
 import com.fnb.usermanagement.model.Credentials;
+import com.fnb.usermanagement.repository.UserCredentialRepository;
+import com.fnb.usermanagement.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.List;
 
-public class UserDetailsImpl implements UserDetails {
 
-    private final User user;
+@Service
+@RequiredArgsConstructor
+public class UserDetailsImpl implements UserDetailsService {
 
-    public UserDetailsImpl(User user) {
-        this.user = user;
-    }
+    private final UserRepository userRepository;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Ensure role is not null
-        return List.of(new SimpleGrantedAuthority(user.getRole().name()));
-    }
+    private final UserCredentialRepository userCredentialsRepository;
+
 
     @Override
-    public String getPassword() {
-        // Make sure User has a Credentials object set
-        Credentials creds = user.getCredentials();
-        return creds != null ? creds.getPassword_hash() : null;
-    }
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-    @Override
-    public String getUsername() {
-        return user.getEmail();
-    }
+        User user = userRepository.findByEmail(email);
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
+        Credentials userCredential = userCredentialsRepository.findByUser_CustomerId(user.getCustomerId());
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public User getUser() {
-        return user;
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(userCredential.getPassword_hash())
+                .authorities(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                .build();
     }
 }

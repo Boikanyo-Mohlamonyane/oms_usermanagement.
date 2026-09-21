@@ -5,9 +5,11 @@ import com.fnb.usermanagement.dto.RegisterResponse;
 import com.fnb.usermanagement.dto.LoginRequest;
 import com.fnb.usermanagement.dto.LoginResponse;
 import com.fnb.usermanagement.enums.Role;
+import com.fnb.usermanagement.security.JwtService;
 import jakarta.transaction.Transactional;
 import com.fnb.usermanagement.model.Credentials;
 import com.fnb.usermanagement.model.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,22 +20,18 @@ import com.fnb.usermanagement.repository.UserRepository;
 import com.fnb.usermanagement.security.securityImpl.JwtServiceImpl;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private UserCredentialRepository userCredentialRepository;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserCredentialRepository userCredentialsRepository;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtServiceImpl jwtService;
+    private final JwtService jwtService;
 
     @Override
     @Transactional
@@ -44,44 +42,41 @@ public class AuthServiceImpl implements AuthService {
                 .email(registerRequest.getEmail())
                 .role(Role.CUSTOMER)
                 .build();
-
         user = userRepository.save(user);
 
-        Credentials credentials = Credentials.builder()
+        Credentials userCredential = Credentials.builder()
                 .user(user)
                 .password_hash(passwordEncoder.encode(registerRequest.getPassword()))
                 .build();
+        userCredentialsRepository.save(userCredential);
 
-        userCredentialRepository.save(credentials);
+        return toUserResponse(user);
 
-        return toResponse(user);
     }
 
-    @Transactional
+    @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        // Authenticate user credentials
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
 
-        // Load user from DB
-        User user = userRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user =  userRepository.findByEmail(loginRequest.getEmail());
 
-        // Generate JWT token
-        String token = jwtService.generateToken(user);
+        String token =  jwtService.generateToken(user);
 
         return LoginResponse.builder()
                 .token(token)
-                .customerId(user.getCustomer_id().getMostSignificantBits()) // adjust if UUID
+                .customerId(user.getCustomerId())
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .build();
     }
 
-    private RegisterResponse toResponse(User user) {
+
+    private RegisterResponse toUserResponse(User user){
         return RegisterResponse.builder()
-                .customerId(user.getCustomer_id())
+                .customerId(user.getCustomerId())
                 .firstName(user.getFirst_name())
                 .surname(user.getSurname())
                 .email(user.getEmail())

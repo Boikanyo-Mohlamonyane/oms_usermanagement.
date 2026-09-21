@@ -1,13 +1,12 @@
 package com.fnb.usermanagement.security.securityImpl;
-
+import com.fnb.usermanagement.model.User;
+import com.fnb.usermanagement.security.JwtService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import com.fnb.usermanagement.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.fnb.usermanagement.security.JwtService;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -22,7 +21,6 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.expiration-ms}")
     private Long expirationMs;
 
-
     private SecretKey signingkey(){
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -35,7 +33,7 @@ public class JwtServiceImpl implements JwtService {
 
         return Jwts.builder()
                 .subject(user.getEmail())
-                .claim("customerId", user.getCustomer_id())
+                .claim("customerId", user.getCustomerId())
                 .claim("role", user.getRole().name())
                 .issuedAt(now)
                 .expiration(expiryDate)
